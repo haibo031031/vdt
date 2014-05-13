@@ -1,0 +1,3 @@
+rm results.dat
+make errmsg
+./global_memory_access  -p 1 -t gpu -d 0
