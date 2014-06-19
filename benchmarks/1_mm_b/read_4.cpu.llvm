@@ -1,0 +1,257 @@
+; ModuleID = 'Program'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux"
+
+declare void @__read_4_original(float addrspace(1)*, float addrspace(1)*, i32, i32) nounwind
+
+declare i64 @get_global_id(i32) nounwind readnone
+
+declare <4 x float> @_Z6vload4mPKU3AS1f(i64, float addrspace(1)* nocapture) nounwind readonly
+
+declare void @_Z7vstore4Dv4_fmPU3AS1f(<4 x float>, i64, float addrspace(1)* nocapture) nounwind
+
+declare [7 x i64] @__WG.boundaries.read_4_original(float addrspace(1)*, float addrspace(1)*, i32, i32)
+
+declare i64 @get_local_size(i32)
+
+declare i64 @get_base_global_id.(i32)
+
+declare i1 @__ocl_allOne(i1)
+
+declare i1 @__ocl_allZero(i1)
+
+declare void @__read_4_separated_args(float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*) nounwind alwaysinline
+
+declare [7 x i64] @WG.boundaries.read_4(float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)
+
+define void @read_4(i8* %pBuffer) {
+entry:
+  %0 = bitcast i8* %pBuffer to float addrspace(1)**
+  %1 = load float addrspace(1)** %0, align 8
+  %2 = getelementptr i8* %pBuffer, i64 8
+  %3 = bitcast i8* %2 to float addrspace(1)**
+  %4 = load float addrspace(1)** %3, align 8
+  %5 = getelementptr i8* %pBuffer, i64 16
+  %6 = bitcast i8* %5 to i32*
+  %7 = load i32* %6, align 4
+  %8 = getelementptr i8* %pBuffer, i64 20
+  %9 = bitcast i8* %8 to i32*
+  %10 = load i32* %9, align 4
+  %11 = getelementptr i8* %pBuffer, i64 24
+  %12 = bitcast i8* %11 to { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }**
+  %13 = load { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }** %12, align 8
+  %14 = getelementptr i8* %pBuffer, i64 40
+  %15 = bitcast i8* %14 to <{ [4 x i64] }>**
+  %16 = load <{ [4 x i64] }>** %15, align 8
+  %17 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 0
+  %18 = load i64* %17, align 8
+  %19 = bitcast <{ [4 x i64] }>* %16 to i64*
+  %20 = load i64* %19, align 8
+  %21 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 1
+  %22 = load i64* %21, align 8
+  %23 = getelementptr <{ [4 x i64] }>* %16, i64 0, i32 0, i64 1
+  %24 = load i64* %23, align 8
+  %vector.size.i = ashr i64 %18, 2
+  %num.vector.wi.i = and i64 %18, -4
+  %max.vector.gid.i = add i64 %num.vector.wi.i, %20
+  %scalar.size.i = sub i64 %18, %num.vector.wi.i
+  %25 = icmp eq i64 %vector.size.i, 0
+  br i1 %25, label %scalarIf.i, label %dim_1_vector_pre_head.i
+
+dim_1_vector_pre_head.i:                          ; preds = %entry
+  %tempvector_func.i = insertelement <4 x i64> undef, i64 %20, i32 0
+  %vectorvector_func.i = shufflevector <4 x i64> %tempvector_func.i, <4 x i64> undef, <4 x i32> zeroinitializer
+  %26 = add <4 x i64> %vectorvector_func.i, <i64 0, i64 1, i64 2, i64 3>
+  %27 = shl <4 x i64> %26, <i64 2, i64 2, i64 2, i64 2>
+  %28 = trunc <4 x i64> %27 to <4 x i32>
+  %extract.0.i = extractelement <4 x i32> %28, i32 0
+  %extract.03.i = extractelement <4 x i32> %28, i32 1
+  %sub.delta.i = sub i32 %extract.03.i, %extract.0.i
+  %mul.delta.i = shl i32 %sub.delta.i, 2
+  %temp.i = insertelement <4 x i32> undef, i32 %mul.delta.i, i32 0
+  %vector.i = shufflevector <4 x i32> %temp.i, <4 x i32> undef, <4 x i32> zeroinitializer
+  br label %dim_0_vector_pre_head.i
+
+dim_0_vector_pre_head.i:                          ; preds = %dim_0_vector_exit.i, %dim_1_vector_pre_head.i
+  %dim_1_vector_ind_var.i = phi i64 [ 0, %dim_1_vector_pre_head.i ], [ %dim_1_vector_inc_ind_var.i, %dim_0_vector_exit.i ]
+  %dim_1_vector_tid.i = phi i64 [ %24, %dim_1_vector_pre_head.i ], [ %dim_1_vector_inc_tid.i, %dim_0_vector_exit.i ]
+  %29 = trunc i64 %dim_1_vector_tid.i to i32
+  %30 = mul nsw i32 %29, %7
+  %temp16vector_func.i = insertelement <4 x i32> undef, i32 %30, i32 0
+  %vector15vector_func.i = shufflevector <4 x i32> %temp16vector_func.i, <4 x i32> undef, <4 x i32> zeroinitializer
+  %31 = add nsw <4 x i32> %vector15vector_func.i, %28
+  %32 = sext <4 x i32> %31 to <4 x i64>
+  %extract.04.i = extractelement <4 x i64> %32, i32 0
+  %extract.05.i = extractelement <4 x i64> %32, i32 1
+  %sub.delta6.i = sub i64 %extract.05.i, %extract.04.i
+  %mul.delta7.i = shl i64 %sub.delta6.i, 2
+  %temp8.i = insertelement <4 x i64> undef, i64 %mul.delta7.i, i32 0
+  %vector9.i = shufflevector <4 x i64> %temp8.i, <4 x i64> undef, <4 x i32> zeroinitializer
+  br label %33
+
+; <label>:33                                      ; preds = %._crit_edgevector_func.i, %dim_0_vector_pre_head.i
+  %dim_0_vector_ind_var.i = phi i64 [ 0, %dim_0_vector_pre_head.i ], [ %dim_0_vector_inc_ind_var.i, %._crit_edgevector_func.i ]
+  %34 = phi <4 x i32> [ %28, %dim_0_vector_pre_head.i ], [ %Strided.add.i, %._crit_edgevector_func.i ]
+  %35 = phi <4 x i64> [ %32, %dim_0_vector_pre_head.i ], [ %Strided.add10.i, %._crit_edgevector_func.i ]
+  %36 = icmp sgt i32 %10, 0
+  br i1 %36, label %.lr.phvector_func.i, label %._crit_edgevector_func.i
+
+.lr.phvector_func.i:                              ; preds = %33, %.lr.phvector_func.i
+  %lsr.iv5 = phi i32 [ %lsr.iv.next6, %.lr.phvector_func.i ], [ 0, %33 ]
+  %lsr.iv = phi i32 [ %lsr.iv.next, %.lr.phvector_func.i ], [ %10, %33 ]
+  %vectorPHIvector_func.i = phi <4 x float> [ %47, %.lr.phvector_func.i ], [ zeroinitializer, %33 ]
+  %vectorPHI17vector_func.i = phi <4 x float> [ %48, %.lr.phvector_func.i ], [ zeroinitializer, %33 ]
+  %vectorPHI18vector_func.i = phi <4 x float> [ %49, %.lr.phvector_func.i ], [ zeroinitializer, %33 ]
+  %vectorPHI19vector_func.i = phi <4 x float> [ %50, %.lr.phvector_func.i ], [ zeroinitializer, %33 ]
+  %temp21vector_func.i = insertelement <4 x i32> undef, i32 %lsr.iv5, i32 0
+  %vector20vector_func.i = shufflevector <4 x i32> %temp21vector_func.i, <4 x i32> undef, <4 x i32> zeroinitializer
+  %37 = add nsw <4 x i32> %vector20vector_func.i, %34
+  %38 = sext <4 x i32> %37 to <4 x i64>
+  %extractvector_func.i = extractelement <4 x i64> %38, i32 0
+  %extract22vector_func.i = extractelement <4 x i64> %38, i32 1
+  %extract23vector_func.i = extractelement <4 x i64> %38, i32 2
+  %extract24vector_func.i = extractelement <4 x i64> %38, i32 3
+  %39 = getelementptr inbounds float addrspace(1)* %1, i64 %extractvector_func.i
+  %40 = getelementptr inbounds float addrspace(1)* %1, i64 %extract22vector_func.i
+  %41 = getelementptr inbounds float addrspace(1)* %1, i64 %extract23vector_func.i
+  %42 = getelementptr inbounds float addrspace(1)* %1, i64 %extract24vector_func.i
+  %43 = bitcast float addrspace(1)* %39 to <4 x float>*
+  %srcval.i4.i = load <4 x float>* %43, align 1
+  %44 = bitcast float addrspace(1)* %40 to <4 x float>*
+  %srcval.i3.i = load <4 x float>* %44, align 1
+  %45 = bitcast float addrspace(1)* %41 to <4 x float>*
+  %srcval.i2.i = load <4 x float>* %45, align 1
+  %46 = bitcast float addrspace(1)* %42 to <4 x float>*
+  %srcval.i1.i = load <4 x float>* %46, align 1
+  %Seq_64_0vector_func.i = shufflevector <4 x float> %srcval.i4.i, <4 x float> %srcval.i3.i, <4 x i32> <i32 0, i32 1, i32 4, i32 5>
+  %Seq_64_1vector_func.i = shufflevector <4 x float> %srcval.i2.i, <4 x float> %srcval.i1.i, <4 x i32> <i32 0, i32 1, i32 4, i32 5>
+  %Seq_64_2vector_func.i = shufflevector <4 x float> %srcval.i4.i, <4 x float> %srcval.i3.i, <4 x i32> <i32 2, i32 3, i32 6, i32 7>
+  %Seq_64_3vector_func.i = shufflevector <4 x float> %srcval.i2.i, <4 x float> %srcval.i1.i, <4 x i32> <i32 2, i32 3, i32 6, i32 7>
+  %Seq_32_0vector_func.i = shufflevector <4 x float> %Seq_64_0vector_func.i, <4 x float> %Seq_64_1vector_func.i, <4 x i32> <i32 0, i32 2, i32 4, i32 6>
+  %Seq_32_1vector_func.i = shufflevector <4 x float> %Seq_64_0vector_func.i, <4 x float> %Seq_64_1vector_func.i, <4 x i32> <i32 1, i32 3, i32 5, i32 7>
+  %Seq_32_2vector_func.i = shufflevector <4 x float> %Seq_64_2vector_func.i, <4 x float> %Seq_64_3vector_func.i, <4 x i32> <i32 0, i32 2, i32 4, i32 6>
+  %Seq_32_3vector_func.i = shufflevector <4 x float> %Seq_64_2vector_func.i, <4 x float> %Seq_64_3vector_func.i, <4 x i32> <i32 1, i32 3, i32 5, i32 7>
+  %47 = fadd <4 x float> %vectorPHIvector_func.i, %Seq_32_0vector_func.i
+  %48 = fadd <4 x float> %vectorPHI17vector_func.i, %Seq_32_1vector_func.i
+  %49 = fadd <4 x float> %vectorPHI18vector_func.i, %Seq_32_2vector_func.i
+  %50 = fadd <4 x float> %vectorPHI19vector_func.i, %Seq_32_3vector_func.i
+  %lsr.iv.next = add i32 %lsr.iv, -1
+  %lsr.iv.next6 = add i32 %lsr.iv5, %7
+  %exitcondvector_func.i = icmp eq i32 %lsr.iv.next, 0
+  br i1 %exitcondvector_func.i, label %._crit_edgevector_func.i, label %.lr.phvector_func.i
+
+._crit_edgevector_func.i:                         ; preds = %.lr.phvector_func.i, %33
+  %vectorPHI25vector_func.i = phi <4 x float> [ zeroinitializer, %33 ], [ %47, %.lr.phvector_func.i ]
+  %vectorPHI26vector_func.i = phi <4 x float> [ zeroinitializer, %33 ], [ %48, %.lr.phvector_func.i ]
+  %vectorPHI27vector_func.i = phi <4 x float> [ zeroinitializer, %33 ], [ %49, %.lr.phvector_func.i ]
+  %vectorPHI28vector_func.i = phi <4 x float> [ zeroinitializer, %33 ], [ %50, %.lr.phvector_func.i ]
+  %shuf_transpLvector_func.i = shufflevector <4 x float> %vectorPHI25vector_func.i, <4 x float> %vectorPHI27vector_func.i, <4 x i32> <i32 0, i32 1, i32 4, i32 5>
+  %shuf_transpL29vector_func.i = shufflevector <4 x float> %vectorPHI26vector_func.i, <4 x float> %vectorPHI28vector_func.i, <4 x i32> <i32 0, i32 1, i32 4, i32 5>
+  %shuf_transpHvector_func.i = shufflevector <4 x float> %vectorPHI25vector_func.i, <4 x float> %vectorPHI27vector_func.i, <4 x i32> <i32 2, i32 3, i32 6, i32 7>
+  %shuf_transpH30vector_func.i = shufflevector <4 x float> %vectorPHI26vector_func.i, <4 x float> %vectorPHI28vector_func.i, <4 x i32> <i32 2, i32 3, i32 6, i32 7>
+  %shuf_transpL31vector_func.i = shufflevector <4 x float> %shuf_transpLvector_func.i, <4 x float> %shuf_transpL29vector_func.i, <4 x i32> <i32 0, i32 4, i32 2, i32 6>
+  %shuf_transpH32vector_func.i = shufflevector <4 x float> %shuf_transpLvector_func.i, <4 x float> %shuf_transpL29vector_func.i, <4 x i32> <i32 1, i32 5, i32 3, i32 7>
+  %shuf_transpL33vector_func.i = shufflevector <4 x float> %shuf_transpHvector_func.i, <4 x float> %shuf_transpH30vector_func.i, <4 x i32> <i32 0, i32 4, i32 2, i32 6>
+  %shuf_transpH34vector_func.i = shufflevector <4 x float> %shuf_transpHvector_func.i, <4 x float> %shuf_transpH30vector_func.i, <4 x i32> <i32 1, i32 5, i32 3, i32 7>
+  %extract35vector_func.i = extractelement <4 x i64> %35, i32 0
+  %extract36vector_func.i = extractelement <4 x i64> %35, i32 1
+  %extract37vector_func.i = extractelement <4 x i64> %35, i32 2
+  %extract38vector_func.i = extractelement <4 x i64> %35, i32 3
+  %51 = getelementptr inbounds float addrspace(1)* %4, i64 %extract35vector_func.i
+  %52 = getelementptr inbounds float addrspace(1)* %4, i64 %extract36vector_func.i
+  %53 = getelementptr inbounds float addrspace(1)* %4, i64 %extract37vector_func.i
+  %54 = getelementptr inbounds float addrspace(1)* %4, i64 %extract38vector_func.i
+  %55 = bitcast float addrspace(1)* %51 to <4 x float>*
+  store <4 x float> %shuf_transpL31vector_func.i, <4 x float>* %55, align 1
+  %56 = bitcast float addrspace(1)* %52 to <4 x float>*
+  store <4 x float> %shuf_transpH32vector_func.i, <4 x float>* %56, align 1
+  %57 = bitcast float addrspace(1)* %53 to <4 x float>*
+  store <4 x float> %shuf_transpL33vector_func.i, <4 x float>* %57, align 1
+  %58 = bitcast float addrspace(1)* %54 to <4 x float>*
+  store <4 x float> %shuf_transpH34vector_func.i, <4 x float>* %58, align 1
+  %dim_0_vector_inc_ind_var.i = add nuw nsw i64 %dim_0_vector_ind_var.i, 1
+  %Strided.add.i = add <4 x i32> %34, %vector.i
+  %Strided.add10.i = add <4 x i64> %35, %vector9.i
+  %dim_0_vector_cmp.to.max.i = icmp eq i64 %dim_0_vector_inc_ind_var.i, %vector.size.i
+  br i1 %dim_0_vector_cmp.to.max.i, label %dim_0_vector_exit.i, label %33
+
+dim_0_vector_exit.i:                              ; preds = %._crit_edgevector_func.i
+  %dim_1_vector_inc_ind_var.i = add nuw nsw i64 %dim_1_vector_ind_var.i, 1
+  %dim_1_vector_inc_tid.i = add nuw nsw i64 %dim_1_vector_tid.i, 1
+  %dim_1_vector_cmp.to.max.i = icmp eq i64 %dim_1_vector_inc_ind_var.i, %22
+  br i1 %dim_1_vector_cmp.to.max.i, label %scalarIf.i, label %dim_0_vector_pre_head.i
+
+scalarIf.i:                                       ; preds = %dim_0_vector_exit.i, %entry
+  %59 = icmp eq i64 %18, %num.vector.wi.i
+  br i1 %59, label %__read_4_separated_args.exit, label %dim_1_pre_head.i
+
+dim_1_pre_head.i:                                 ; preds = %scalarIf.i
+  %60 = add i64 %20, %num.vector.wi.i
+  %61 = mul i64 %60, 4
+  %62 = trunc i64 %61 to i32
+  br label %dim_0_pre_head.i
+
+dim_0_pre_head.i:                                 ; preds = %dim_0_exit.i, %dim_1_pre_head.i
+  %dim_1_ind_var.i = phi i64 [ 0, %dim_1_pre_head.i ], [ %dim_1_inc_ind_var.i, %dim_0_exit.i ]
+  %dim_1_tid.i = phi i64 [ %24, %dim_1_pre_head.i ], [ %dim_1_inc_tid.i, %dim_0_exit.i ]
+  %63 = trunc i64 %dim_1_tid.i to i32
+  %64 = mul nsw i32 %63, %7
+  br label %scalar_kernel_entry.i
+
+scalar_kernel_entry.i:                            ; preds = %._crit_edge.i, %dim_0_pre_head.i
+  %lsr.iv9 = phi i32 [ %lsr.iv.next10, %._crit_edge.i ], [ %62, %dim_0_pre_head.i ]
+  %dim_0_ind_var.i = phi i64 [ 0, %dim_0_pre_head.i ], [ %dim_0_inc_ind_var.i, %._crit_edge.i ]
+  %dim_0_tid.i = phi i64 [ %max.vector.gid.i, %dim_0_pre_head.i ], [ %dim_0_inc_tid.i, %._crit_edge.i ]
+  %65 = icmp sgt i32 %10, 0
+  %66 = shl i64 %dim_0_tid.i, 2
+  %67 = trunc i64 %66 to i32
+  %68 = add nsw i32 %64, %67
+  br i1 %65, label %.lr.ph.i, label %._crit_edge.i
+
+.lr.ph.i:                                         ; preds = %scalar_kernel_entry.i, %.lr.ph.i
+  %lsr.iv11 = phi i32 [ %lsr.iv.next12, %.lr.ph.i ], [ %lsr.iv9, %scalar_kernel_entry.i ]
+  %lsr.iv7 = phi i32 [ %lsr.iv.next8, %.lr.ph.i ], [ %10, %scalar_kernel_entry.i ]
+  %val.01.i = phi <4 x float> [ %72, %.lr.ph.i ], [ zeroinitializer, %scalar_kernel_entry.i ]
+  %69 = sext i32 %lsr.iv11 to i64
+  %70 = getelementptr inbounds float addrspace(1)* %1, i64 %69
+  %71 = bitcast float addrspace(1)* %70 to <4 x float>*
+  %srcval.i.i = load <4 x float>* %71, align 1
+  %72 = fadd <4 x float> %val.01.i, %srcval.i.i
+  %lsr.iv.next8 = add i32 %lsr.iv7, -1
+  %lsr.iv.next12 = add i32 %lsr.iv11, %7
+  %exitcond.i = icmp eq i32 %lsr.iv.next8, 0
+  br i1 %exitcond.i, label %._crit_edge.i, label %.lr.ph.i
+
+._crit_edge.i:                                    ; preds = %.lr.ph.i, %scalar_kernel_entry.i
+  %val.0.lcssa.i = phi <4 x float> [ zeroinitializer, %scalar_kernel_entry.i ], [ %72, %.lr.ph.i ]
+  %73 = sext i32 %68 to i64
+  %74 = getelementptr inbounds float addrspace(1)* %4, i64 %73
+  %75 = bitcast float addrspace(1)* %74 to <4 x float>*
+  store <4 x float> %val.0.lcssa.i, <4 x float>* %75, align 1
+  %dim_0_inc_ind_var.i = add nuw nsw i64 %dim_0_ind_var.i, 1
+  %dim_0_inc_tid.i = add nuw nsw i64 %dim_0_tid.i, 1
+  %lsr.iv.next10 = add i32 %lsr.iv9, 4
+  %dim_0_cmp.to.max.i = icmp eq i64 %dim_0_inc_ind_var.i, %scalar.size.i
+  br i1 %dim_0_cmp.to.max.i, label %dim_0_exit.i, label %scalar_kernel_entry.i
+
+dim_0_exit.i:                                     ; preds = %._crit_edge.i
+  %dim_1_inc_ind_var.i = add nuw nsw i64 %dim_1_ind_var.i, 1
+  %dim_1_inc_tid.i = add nuw nsw i64 %dim_1_tid.i, 1
+  %dim_1_cmp.to.max.i = icmp eq i64 %dim_1_inc_ind_var.i, %22
+  br i1 %dim_1_cmp.to.max.i, label %__read_4_separated_args.exit, label %dim_0_pre_head.i
+
+__read_4_separated_args.exit:                     ; preds = %dim_0_exit.i, %scalarIf.i
+  ret void
+}
+
+!opencl.kernels = !{!0}
+!opencl.build.options = !{!2}
+!cl.noBarrierPath.kernels = !{!3}
+!opencl.wrappers = !{!4}
+!opencl.disabled.FP_CONTRACT = !{}
+
+!0 = metadata !{void (float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)* @__read_4_separated_args, metadata !1}
+!1 = metadata !{metadata !"image_access_qualifier", i32 3, i32 3, i32 3, i32 3}
+!2 = metadata !{metadata !"-cl-std=CL1.2"}
+!3 = metadata !{metadata !"read_4"}
+!4 = metadata !{void (i8*)* @read_4}

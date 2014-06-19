@@ -1,0 +1,6 @@
+0 Kernels.cl black_scholes_native
+1 Kernels.cl black_scholes_inter_2_step_2
+2 Kernels.cl black_scholes_inter_4_step_2
+3 Kernels.cl black_scholes_inter_8_step_2
+4 Kernels.cl black_scholes_inter_16_step_2
+

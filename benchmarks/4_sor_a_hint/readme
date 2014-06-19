@@ -1,0 +1,4 @@
+1. how to deal with the constant number? 
+  float coff = 4.0f; -->   float2 coff = (float2)4.0f;
+2. using vector data types
+	save index calcuation cost.

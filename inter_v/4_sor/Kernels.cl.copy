@@ -1,0 +1,288 @@
+#define out(row, col, w) out[(row)*w+(col)]
+#define in(row, col, w) in[(row)*w+(col)]
+#define _out(row, col, w) &(out[(row)*w+(col)])
+#define _in(row, col, w) &(in[(row)*w+(col)])
+
+#define VF2 2
+#define VF4 4
+#define VF8 8
+#define VF16 16
+ 
+__kernel void sor_native(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0);
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float coff = 4.0f;
+  
+  float in_e = in((row + 0), (col + 1), side);
+  float in_w = in((row + 0), (col - 1), side);
+  float in_n = in((row - 1), (col + 0), side);
+  float in_s = in((row + 1), (col + 0), side);
+  float sum = (in_e + in_w + in_n + in_s)/coff;
+  
+  out(idy, idx, w) =  sum;
+}
+
+__kernel void sor_inter_2_step_1(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF2;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float coff = 4.0f;
+  
+  float in_e_0 = in((row + 0), (col + 1 + 0), side);
+  float in_e_1 = in((row + 0), (col + 1 + 1), side);
+  float in_w_0 = in((row + 0), (col - 1 + 0), side);
+  float in_w_1 = in((row + 0), (col - 1 + 1), side);
+  float in_n_0 = in((row - 1), (col + 0 + 0), side);
+  float in_n_1 = in((row - 1), (col + 0 + 1), side);
+  float in_s_0 = in((row + 1), (col + 0 + 0), side);
+  float in_s_1 = in((row + 1), (col + 0 + 1), side);
+  float sum_0 = (in_e_0 + in_w_0 + in_n_0 + in_s_0)/coff;
+  float sum_1 = (in_e_1 + in_w_1 + in_n_1 + in_s_1)/coff;
+  
+  out(idy, idx + 0, w) =  sum_0;
+  out(idy, idx + 1, w) =  sum_1;
+}
+
+__kernel void sor_inter_2_step_2(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF2;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float2 coff = (float2)4.0f;
+  
+	float2 in_e = (float2)(in((row + 0), (col + 1 + 0), side), in((row + 0), (col + 1 + 1), side));
+	float2 in_w = (float2)(in((row + 0), (col - 1 + 0), side), in((row + 0), (col - 1 + 1), side));
+	float2 in_n = (float2)(in((row - 1), (col + 0 + 0), side), in((row - 1), (col + 0 + 1), side));
+	float2 in_s = (float2)(in((row + 1), (col + 0 + 0), side), in((row + 1), (col + 0 + 1), side));
+
+	float2 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+  out(idy, idx + 0, w) =  sum.s0;
+  out(idy, idx + 1, w) =  sum.s1;
+}
+
+__kernel void sor_inter_2_step_3(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF2;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float coff = 4.0f;
+  
+	float2 in_e = vload2(0, _in((row + 0), (col + 1 + 0), side));
+	float2 in_w = vload2(0, _in((row + 0), (col - 1 + 0), side));
+	float2 in_n = vload2(0, _in((row - 1), (col + 0 + 0), side));
+	float2 in_s = vload2(0, _in((row + 1), (col + 0 + 0), side));
+	
+	float2 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+	vstore2(sum, 0, _out(idy, idx + 0, w));
+}
+
+__kernel void sor_inter_4_step_2(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF4;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float4 coff = (float4)4.0f;
+  
+	float4 in_e = (float4)(in((row + 0), (col + 1 + 0), side), in((row + 0), (col + 1 + 1), side), \
+		in((row + 0), (col + 1 + 2), side), in((row + 0), (col + 1 + 3), side));
+	float4 in_w = (float4)(in((row + 0), (col - 1 + 0), side), in((row + 0), (col - 1 + 1), side), \
+		in((row + 0), (col - 1 + 2), side), in((row + 0), (col - 1 + 3), side));
+	float4 in_n = (float4)(in((row - 1), (col + 0 + 0), side), in((row - 1), (col + 0 + 1), side), \
+		in((row - 1), (col + 0 + 2), side), in((row - 1), (col + 0 + 3), side));
+	float4 in_s = (float4)(in((row + 1), (col + 0 + 0), side), in((row + 1), (col + 0 + 1), side), \
+		in((row + 1), (col + 0 + 2), side), in((row + 1), (col + 0 + 3), side));
+
+	float4 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+  out(idy, idx + 0, w) =  sum.s0;
+  out(idy, idx + 1, w) =  sum.s1;
+  out(idy, idx + 2, w) =  sum.s2;
+  out(idy, idx + 3, w) =  sum.s3;
+}
+
+
+__kernel void sor_inter_4_step_3(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF4;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float4 coff = (float4)4.0f;
+  
+	float4 in_e = vload4(0, _in((row + 0), (col + 1 + 0), side));
+	float4 in_w = vload4(0, _in((row + 0), (col - 1 + 0), side));
+	float4 in_n = vload4(0, _in((row - 1), (col + 0 + 0), side));
+	float4 in_s = vload4(0, _in((row + 1), (col + 0 + 0), side));
+	
+	float4 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+	vstore4(sum, 0, _out(idy, idx + 0, w));
+}
+
+__kernel void sor_inter_8_step_2(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF8;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float8 coff = (float8)4.0f;
+  
+	float8 in_e = (float8)(in((row + 0), (col + 1 + 0), side), in((row + 0), (col + 1 + 1), side), \
+		in((row + 0), (col + 1 + 2), side), in((row + 0), (col + 1 + 3), side), \
+		in((row + 0), (col + 1 + 4), side), in((row + 0), (col + 1 + 5), side), \
+		in((row + 0), (col + 1 + 6), side), in((row + 0), (col + 1 + 7), side));
+	float8 in_w = (float8)(in((row + 0), (col - 1 + 0), side), in((row + 0), (col - 1 + 1), side), \
+		in((row + 0), (col - 1 + 2), side), in((row + 0), (col - 1 + 3), side), \
+		in((row + 0), (col - 1 + 4), side), in((row + 0), (col - 1 + 5), side), \
+		in((row + 0), (col - 1 + 6), side), in((row + 0), (col - 1 + 7), side));
+	float8 in_n = (float8)(in((row - 1), (col + 0 + 0), side), in((row - 1), (col + 0 + 1), side), \
+		in((row - 1), (col + 0 + 2), side), in((row - 1), (col + 0 + 3), side), \
+		in((row - 1), (col + 0 + 4), side), in((row - 1), (col + 0 + 5), side), \
+		in((row - 1), (col + 0 + 6), side), in((row - 1), (col + 0 + 7), side));
+	float8 in_s = (float8)(in((row + 1), (col + 0 + 0), side), in((row + 1), (col + 0 + 1), side), \
+		in((row + 1), (col + 0 + 2), side), in((row + 1), (col + 0 + 3), side), \
+		in((row + 1), (col + 0 + 4), side), in((row + 1), (col + 0 + 5), side), \
+		in((row + 1), (col + 0 + 6), side), in((row + 1), (col + 0 + 7), side));
+
+	float8 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+  out(idy, idx + 0, w) =  sum.s0;
+  out(idy, idx + 1, w) =  sum.s1;
+  out(idy, idx + 2, w) =  sum.s2;
+  out(idy, idx + 3, w) =  sum.s3;
+  out(idy, idx + 4, w) =  sum.s4;
+  out(idy, idx + 5, w) =  sum.s5;
+  out(idy, idx + 6, w) =  sum.s6;
+  out(idy, idx + 7, w) =  sum.s7;
+}
+
+__kernel void sor_inter_8_step_3(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF8;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float8 coff = (float8)4.0f;
+  
+	float8 in_e = vload8(0, _in((row + 0), (col + 1 + 0), side));
+	float8 in_w = vload8(0, _in((row + 0), (col - 1 + 0), side));
+	float8 in_n = vload8(0, _in((row - 1), (col + 0 + 0), side));
+	float8 in_s = vload8(0, _in((row + 1), (col + 0 + 0), side));
+	
+	float8 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+	vstore8(sum, 0, _out(idy, idx + 0, w));
+}
+
+__kernel void sor_inter_16_step_2(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF16;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float16 coff = (float16)4.0f;
+  
+	float16 in_e = (float16)(in((row + 0), (col + 1 + 0), side), in((row + 0), (col + 1 + 1), side), \
+		in((row + 0), (col + 1 + 2), side), in((row + 0), (col + 1 + 3), side), \
+		in((row + 0), (col + 1 + 4), side), in((row + 0), (col + 1 + 5), side), \
+		in((row + 0), (col + 1 + 6), side), in((row + 0), (col + 1 + 7), side), \
+		in((row + 0), (col + 1 + 8), side), in((row + 0), (col + 1 + 9), side), \
+		in((row + 0), (col + 1 + 10), side), in((row + 0), (col + 1 + 11), side), \
+		in((row + 0), (col + 1 + 12), side), in((row + 0), (col + 1 + 13), side), \
+		in((row + 0), (col + 1 + 14), side), in((row + 0), (col + 1 + 15), side));
+	float16 in_w = (float16)(in((row + 0), (col - 1 + 0), side), in((row + 0), (col - 1 + 1), side), \
+		in((row + 0), (col - 1 + 2), side), in((row + 0), (col - 1 + 3), side), \
+		in((row + 0), (col - 1 + 4), side), in((row + 0), (col - 1 + 5), side), \
+		in((row + 0), (col - 1 + 6), side), in((row + 0), (col - 1 + 7), side), \
+		in((row + 0), (col - 1 + 8), side), in((row + 0), (col - 1 + 9), side), \
+		in((row + 0), (col - 1 + 10), side), in((row + 0), (col - 1 + 11), side), \
+		in((row + 0), (col - 1 + 12), side), in((row + 0), (col - 1 + 13), side), \
+		in((row + 0), (col - 1 + 14), side), in((row + 0), (col - 1 + 15), side));
+	float16 in_n = (float16)(in((row - 1), (col + 0 + 0), side), in((row - 1), (col + 0 + 1), side), \
+		in((row - 1), (col + 0 + 2), side), in((row - 1), (col + 0 + 3), side), \
+		in((row - 1), (col + 0 + 4), side), in((row - 1), (col + 0 + 5), side), \
+		in((row - 1), (col + 0 + 6), side), in((row - 1), (col + 0 + 7), side), \
+		in((row - 1), (col + 0 + 8), side), in((row - 1), (col + 0 + 9), side), \
+		in((row - 1), (col + 0 + 10), side), in((row - 1), (col + 0 + 11), side), \
+		in((row - 1), (col + 0 + 12), side), in((row - 1), (col + 0 + 13), side), \
+		in((row - 1), (col + 0 + 14), side), in((row - 1), (col + 0 + 15), side));
+	float16 in_s = (float16)(in((row + 1), (col + 0 + 0), side), in((row + 1), (col + 0 + 1), side), \
+		in((row + 1), (col + 0 + 2), side), in((row + 1), (col + 0 + 3), side), \
+		in((row + 1), (col + 0 + 4), side), in((row + 1), (col + 0 + 5), side), \
+		in((row + 1), (col + 0 + 6), side), in((row + 1), (col + 0 + 7), side), \
+		in((row + 1), (col + 0 + 8), side), in((row + 1), (col + 0 + 9), side), \
+		in((row + 1), (col + 0 + 10), side), in((row + 1), (col + 0 + 11), side), \
+		in((row + 1), (col + 0 + 12), side), in((row + 1), (col + 0 + 13), side), \
+		in((row + 1), (col + 0 + 14), side), in((row + 1), (col + 0 + 15), side));
+
+	float16 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+  out(idy, idx + 0, w) =  sum.s0;
+  out(idy, idx + 1, w) =  sum.s1;
+  out(idy, idx + 2, w) =  sum.s2;
+  out(idy, idx + 3, w) =  sum.s3;
+  out(idy, idx + 4, w) =  sum.s4;
+  out(idy, idx + 5, w) =  sum.s5;
+  out(idy, idx + 6, w) =  sum.s6;
+  out(idy, idx + 7, w) =  sum.s7;
+  out(idy, idx + 8, w) =  sum.s8;
+  out(idy, idx + 9, w) =  sum.s9;
+  out(idy, idx + 10, w) =  sum.sa;
+  out(idy, idx + 11, w) =  sum.sb;
+  out(idy, idx + 12, w) =  sum.sc;
+  out(idy, idx + 13, w) =  sum.sd;
+  out(idy, idx + 14, w) =  sum.se;
+  out(idy, idx + 15, w) =  sum.sf;
+}
+
+__kernel void sor_inter_16_step_3(const __global float* in, __global float* out, int w, int b){
+ 
+  int idx = get_global_id(0) * VF16;
+  int idy = get_global_id(1);
+  
+  int col = idx + 1;
+  int row = idy + 1;
+  int side = w + 2*b;
+  float16 coff = (float16)4.0f;
+  
+	float16 in_e = vload16(0, _in((row + 0), (col + 1 + 0), side));
+	float16 in_w = vload16(0, _in((row + 0), (col - 1 + 0), side));
+	float16 in_n = vload16(0, _in((row - 1), (col + 0 + 0), side));
+	float16 in_s = vload16(0, _in((row + 1), (col + 0 + 0), side));
+	
+	float16 sum = (in_e + in_w + in_n + in_s)/coff;
+  
+	vstore16(sum, 0, _out(idy, idx + 0, w));
+}
+
+
+
+

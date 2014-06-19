@@ -1,0 +1,28 @@
+#C compiler
+CC = g++
+
+
+
+SRC = app.cpp
+EXE = app.${foo}
+
+release: $(SRC)
+	$(CC) $(SRC) -o $(EXE) -I$(INC) -L$(LIB)  -lOpenCL  -fopenmp
+
+errmsg: $(SRC)
+	$(CC) $(SRC) -o $(EXE) -I$(INC) -L$(LIB) -D ERRMSG -lOpenCL -fopenmp 
+
+device: $(SRC)
+	$(CC) -lOpenCL -fopenmp $(SRC) -o $(EXE) -I$(INC) -L$(LIB) -D ERRMSG -D DEV_INFO
+
+ptx: $(SRC)
+	$(CC) -lOpenCL -fopenmp $(SRC) -o $(EXE) -I$(INC) -L$(LIB) -D PTX_MSG
+
+debug: $(SRC)
+	$(CC) -g -lOpenCL $(SRC) -o $(EXE) -I$(INC) -L$(LIB)
+	
+run:
+	./$(EXE)
+	
+clean: $(SRC)
+	rm -f $(EXE) $(EXE).linkinfo *~

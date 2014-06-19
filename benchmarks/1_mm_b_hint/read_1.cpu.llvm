@@ -1,0 +1,175 @@
+; ModuleID = 'Program'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux"
+
+declare void @__read_1_original(float addrspace(1)* nocapture, float addrspace(1)* nocapture, i32, i32) nounwind
+
+declare i64 @get_global_id(i32) nounwind readnone
+
+declare [7 x i64] @__WG.boundaries.read_1_original(float addrspace(1)*, float addrspace(1)*, i32, i32)
+
+declare i64 @get_local_size(i32)
+
+declare i64 @get_base_global_id.(i32)
+
+declare i1 @__ocl_allOne(i1)
+
+declare i1 @__ocl_allZero(i1)
+
+declare void @__read_1_separated_args(float addrspace(1)* nocapture, float addrspace(1)* nocapture, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*) nounwind alwaysinline
+
+declare [7 x i64] @WG.boundaries.read_1(float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)
+
+define void @read_1(i8* %pBuffer) {
+entry:
+  %0 = bitcast i8* %pBuffer to float addrspace(1)**
+  %1 = load float addrspace(1)** %0, align 8
+  %2 = getelementptr i8* %pBuffer, i64 8
+  %3 = bitcast i8* %2 to float addrspace(1)**
+  %4 = load float addrspace(1)** %3, align 8
+  %5 = getelementptr i8* %pBuffer, i64 16
+  %6 = bitcast i8* %5 to i32*
+  %7 = load i32* %6, align 4
+  %8 = getelementptr i8* %pBuffer, i64 20
+  %9 = bitcast i8* %8 to i32*
+  %10 = load i32* %9, align 4
+  %11 = getelementptr i8* %pBuffer, i64 24
+  %12 = bitcast i8* %11 to { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }**
+  %13 = load { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }** %12, align 8
+  %14 = getelementptr i8* %pBuffer, i64 40
+  %15 = bitcast i8* %14 to <{ [4 x i64] }>**
+  %16 = load <{ [4 x i64] }>** %15, align 8
+  %17 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 0
+  %18 = load i64* %17, align 8
+  %19 = bitcast <{ [4 x i64] }>* %16 to i64*
+  %20 = load i64* %19, align 8
+  %21 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 1
+  %22 = load i64* %21, align 8
+  %23 = getelementptr <{ [4 x i64] }>* %16, i64 0, i32 0, i64 1
+  %24 = load i64* %23, align 8
+  %vector.size.i = ashr i64 %18, 2
+  %num.vector.wi.i = and i64 %18, -4
+  %max.vector.gid.i = add i64 %num.vector.wi.i, %20
+  %scalar.size.i = sub i64 %18, %num.vector.wi.i
+  %25 = icmp eq i64 %vector.size.i, 0
+  br i1 %25, label %scalarIf.i, label %dim_1_vector_pre_head.i
+
+dim_1_vector_pre_head.i:                          ; preds = %entry
+  %26 = trunc i64 %20 to i32
+  br label %dim_0_vector_pre_head.i
+
+dim_0_vector_pre_head.i:                          ; preds = %dim_0_vector_exit.i, %dim_1_vector_pre_head.i
+  %dim_1_vector_ind_var.i = phi i64 [ 0, %dim_1_vector_pre_head.i ], [ %dim_1_vector_inc_ind_var.i, %dim_0_vector_exit.i ]
+  %dim_1_vector_tid.i = phi i64 [ %24, %dim_1_vector_pre_head.i ], [ %dim_1_vector_inc_tid.i, %dim_0_vector_exit.i ]
+  %27 = trunc i64 %dim_1_vector_tid.i to i32
+  %28 = mul nsw i32 %27, %7
+  br label %29
+
+; <label>:29                                      ; preds = %._crit_edgevector_func.i, %dim_0_vector_pre_head.i
+  %dim_0_vector_ind_var.i = phi i64 [ 0, %dim_0_vector_pre_head.i ], [ %dim_0_vector_inc_ind_var.i, %._crit_edgevector_func.i ]
+  %30 = phi i32 [ %26, %dim_0_vector_pre_head.i ], [ %37, %._crit_edgevector_func.i ]
+  %31 = icmp sgt i32 %10, 0
+  br i1 %31, label %.lr.phvector_func.i, label %._crit_edgevector_func.i
+
+.lr.phvector_func.i:                              ; preds = %29, %.lr.phvector_func.i
+  %lsr.iv2 = phi i32 [ %lsr.iv.next3, %.lr.phvector_func.i ], [ %30, %29 ]
+  %lsr.iv = phi i32 [ %lsr.iv.next, %.lr.phvector_func.i ], [ %10, %29 ]
+  %vectorPHIvector_func.i = phi <4 x float> [ %34, %.lr.phvector_func.i ], [ zeroinitializer, %29 ]
+  %extractvector_func.i = sext i32 %lsr.iv2 to i64
+  %32 = getelementptr inbounds float addrspace(1)* %1, i64 %extractvector_func.i
+  %ptrTypeCastvector_func.i = bitcast float addrspace(1)* %32 to <4 x float> addrspace(1)*
+  %33 = load <4 x float> addrspace(1)* %ptrTypeCastvector_func.i, align 4
+  %34 = fadd <4 x float> %vectorPHIvector_func.i, %33
+  %lsr.iv.next = add i32 %lsr.iv, -1
+  %lsr.iv.next3 = add i32 %lsr.iv2, %7
+  %exitcondvector_func.i = icmp eq i32 %lsr.iv.next, 0
+  br i1 %exitcondvector_func.i, label %._crit_edgevector_func.i, label %.lr.phvector_func.i
+
+._crit_edgevector_func.i:                         ; preds = %.lr.phvector_func.i, %29
+  %vectorPHI8vector_func.i = phi <4 x float> [ zeroinitializer, %29 ], [ %34, %.lr.phvector_func.i ]
+  %35 = add i32 %28, %30
+  %extract9vector_func.i = sext i32 %35 to i64
+  %36 = getelementptr inbounds float addrspace(1)* %4, i64 %extract9vector_func.i
+  %ptrTypeCast13vector_func.i = bitcast float addrspace(1)* %36 to <4 x float> addrspace(1)*
+  store <4 x float> %vectorPHI8vector_func.i, <4 x float> addrspace(1)* %ptrTypeCast13vector_func.i, align 4
+  %dim_0_vector_inc_ind_var.i = add nuw nsw i64 %dim_0_vector_ind_var.i, 1
+  %37 = add i32 %30, 4
+  %dim_0_vector_cmp.to.max.i = icmp eq i64 %dim_0_vector_inc_ind_var.i, %vector.size.i
+  br i1 %dim_0_vector_cmp.to.max.i, label %dim_0_vector_exit.i, label %29
+
+dim_0_vector_exit.i:                              ; preds = %._crit_edgevector_func.i
+  %dim_1_vector_inc_ind_var.i = add nuw nsw i64 %dim_1_vector_ind_var.i, 1
+  %dim_1_vector_inc_tid.i = add nuw nsw i64 %dim_1_vector_tid.i, 1
+  %dim_1_vector_cmp.to.max.i = icmp eq i64 %dim_1_vector_inc_ind_var.i, %22
+  br i1 %dim_1_vector_cmp.to.max.i, label %scalarIf.i, label %dim_0_vector_pre_head.i
+
+scalarIf.i:                                       ; preds = %dim_0_vector_exit.i, %entry
+  %38 = icmp eq i64 %18, %num.vector.wi.i
+  br i1 %38, label %__read_1_separated_args.exit, label %dim_1_pre_head.i
+
+dim_1_pre_head.i:                                 ; preds = %scalarIf.i
+  %39 = add i64 %20, %num.vector.wi.i
+  %40 = trunc i64 %39 to i32
+  br label %dim_0_pre_head.i
+
+dim_0_pre_head.i:                                 ; preds = %dim_0_exit.i, %dim_1_pre_head.i
+  %dim_1_ind_var.i = phi i64 [ 0, %dim_1_pre_head.i ], [ %dim_1_inc_ind_var.i, %dim_0_exit.i ]
+  %dim_1_tid.i = phi i64 [ %24, %dim_1_pre_head.i ], [ %dim_1_inc_tid.i, %dim_0_exit.i ]
+  %41 = trunc i64 %dim_1_tid.i to i32
+  %42 = mul nsw i32 %41, %7
+  br label %scalar_kernel_entry.i
+
+scalar_kernel_entry.i:                            ; preds = %._crit_edge.i, %dim_0_pre_head.i
+  %lsr.iv6 = phi i32 [ %lsr.iv.next7, %._crit_edge.i ], [ %40, %dim_0_pre_head.i ]
+  %dim_0_ind_var.i = phi i64 [ 0, %dim_0_pre_head.i ], [ %dim_0_inc_ind_var.i, %._crit_edge.i ]
+  %dim_0_tid.i = phi i64 [ %max.vector.gid.i, %dim_0_pre_head.i ], [ %dim_0_inc_tid.i, %._crit_edge.i ]
+  %43 = icmp sgt i32 %10, 0
+  %44 = trunc i64 %dim_0_tid.i to i32
+  %45 = add nsw i32 %42, %44
+  br i1 %43, label %.lr.ph.i, label %._crit_edge.i
+
+.lr.ph.i:                                         ; preds = %scalar_kernel_entry.i, %.lr.ph.i
+  %lsr.iv8 = phi i32 [ %lsr.iv.next9, %.lr.ph.i ], [ %lsr.iv6, %scalar_kernel_entry.i ]
+  %lsr.iv4 = phi i32 [ %lsr.iv.next5, %.lr.ph.i ], [ %10, %scalar_kernel_entry.i ]
+  %val.01.i = phi float [ %49, %.lr.ph.i ], [ 0.000000e+00, %scalar_kernel_entry.i ]
+  %46 = sext i32 %lsr.iv8 to i64
+  %47 = getelementptr inbounds float addrspace(1)* %1, i64 %46
+  %48 = load float addrspace(1)* %47, align 4
+  %49 = fadd float %val.01.i, %48
+  %lsr.iv.next5 = add i32 %lsr.iv4, -1
+  %lsr.iv.next9 = add i32 %lsr.iv8, %7
+  %exitcond.i = icmp eq i32 %lsr.iv.next5, 0
+  br i1 %exitcond.i, label %._crit_edge.i, label %.lr.ph.i
+
+._crit_edge.i:                                    ; preds = %.lr.ph.i, %scalar_kernel_entry.i
+  %val.0.lcssa.i = phi float [ 0.000000e+00, %scalar_kernel_entry.i ], [ %49, %.lr.ph.i ]
+  %50 = sext i32 %45 to i64
+  %51 = getelementptr inbounds float addrspace(1)* %4, i64 %50
+  store float %val.0.lcssa.i, float addrspace(1)* %51, align 4
+  %dim_0_inc_ind_var.i = add nuw nsw i64 %dim_0_ind_var.i, 1
+  %dim_0_inc_tid.i = add nuw nsw i64 %dim_0_tid.i, 1
+  %lsr.iv.next7 = add i32 %lsr.iv6, 1
+  %dim_0_cmp.to.max.i = icmp eq i64 %dim_0_inc_ind_var.i, %scalar.size.i
+  br i1 %dim_0_cmp.to.max.i, label %dim_0_exit.i, label %scalar_kernel_entry.i
+
+dim_0_exit.i:                                     ; preds = %._crit_edge.i
+  %dim_1_inc_ind_var.i = add nuw nsw i64 %dim_1_ind_var.i, 1
+  %dim_1_inc_tid.i = add nuw nsw i64 %dim_1_tid.i, 1
+  %dim_1_cmp.to.max.i = icmp eq i64 %dim_1_inc_ind_var.i, %22
+  br i1 %dim_1_cmp.to.max.i, label %__read_1_separated_args.exit, label %dim_0_pre_head.i
+
+__read_1_separated_args.exit:                     ; preds = %dim_0_exit.i, %scalarIf.i
+  ret void
+}
+
+!opencl.kernels = !{!0}
+!opencl.build.options = !{!2}
+!cl.noBarrierPath.kernels = !{!3}
+!opencl.wrappers = !{!4}
+!opencl.disabled.FP_CONTRACT = !{}
+
+!0 = metadata !{void (float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)* @__read_1_separated_args, metadata !1}
+!1 = metadata !{metadata !"image_access_qualifier", i32 3, i32 3, i32 3, i32 3}
+!2 = metadata !{metadata !"-cl-std=CL1.2"}
+!3 = metadata !{metadata !"read_1"}
+!4 = metadata !{void (i8*)* @read_1}

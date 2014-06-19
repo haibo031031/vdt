@@ -1,0 +1,6 @@
+1. function call.
+2. output-driven: start with the output data, reversely analysis the data dependency. 
+3. the advantage of using vector data types is that the code looks more compact. 
+4. when meeting with constant number, we need pay attendtion to the type casting. 
+5. sub-routine?? the same with the kernel
+

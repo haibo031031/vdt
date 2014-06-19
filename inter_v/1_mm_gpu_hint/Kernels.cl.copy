@@ -1,0 +1,453 @@
+/* ============================================================
+//--cambine: kernel funtion of matrix multiplication
+//--author:	created by Jianbin Fang
+//--date:	17/05/2011
+============================================================ */
+#define VF2 2
+#define VF4 4
+#define VF8 8
+#define VF16 16
+
+__kernel void mm_native(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+								
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+
+	int k = 0;
+	float res = 0;
+	for(k=0; k<w; k=k+1){
+    		float val_a = in_a[id_y*w+k];
+    		float val_b = in_b[k*w+id_x];
+		res +=  val_a*val_b ;
+	}
+	out_c[id_y*w+id_x] = res;
+}
+
+__kernel void mm_inter_2_step_1(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF2;
+	int k=0;
+	float res_0 = 0;
+	float res_1 = 0;
+	for(k=0; k<w; k=k+1){    	
+	    	float val_a_0 = in_a[id_y*w+k];
+	    	float val_a_1 = in_a[id_y*w+k];
+	    	float val_b_0 = in_b[k*w+id_x_new+0];
+	    	float val_b_1 = in_b[k*w+id_x_new+1];
+		res_0 +=  val_a_0 * val_b_0;
+		res_1 +=  val_a_1 * val_b_1;
+	}	
+	out_c[id_y*w+id_x_new+0] = res_0;							
+	out_c[id_y*w+id_x_new+1] = res_1;
+}
+
+__kernel void mm_inter_2_step_2(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF2;
+	int k=0;
+	float2 res = 0;
+	for(k=0; k<w; k=k+1){    	
+	    	float2 val_a = (float2)(in_a[id_y*w+k]);
+	    	float2 val_b = (float2)(in_b[k*w+id_x_new+0], in_b[k*w+id_x_new+1]);
+		res +=  val_a * val_b;
+	}	
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+}
+
+__kernel void mm_inter_2_step_3(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF2;
+	int k=0;
+	float2 res = 0;
+	for(k=0; k<w; k=k+1){    	
+	    	float2 val_a = (float2)(in_a[id_y*w+k]);
+	    	//float2 val_b = (float2)(in_b[k*w+id_x_new+0], in_b[k*w+id_x_new+1]);
+		float2 val_b = vload2(0, &(in_b[k*w+id_x_new]));
+		res +=  val_a * val_b;
+	}	
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+}
+
+__kernel void mm_inter_4_step_1(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF4;
+	int k=0;
+	float res_0 = 0;
+	float res_1 = 0;
+	float res_2 = 0;
+	float res_3 = 0;	
+	for(k=0; k<w; k=k+1){    	
+	    	float val_a_0 = in_a[id_y*w+k];
+	    	float val_a_1 = in_a[id_y*w+k];
+	    	float val_a_2 = in_a[id_y*w+k];
+	    	float val_a_3 = in_a[id_y*w+k];    	    	
+	    	float val_b_0 = in_b[k*w+id_x_new+0];
+	    	float val_b_1 = in_b[k*w+id_x_new+1];
+	    	float val_b_2 = in_b[k*w+id_x_new+2];
+	    	float val_b_3 = in_b[k*w+id_x_new+3];    	
+		res_0 +=  val_a_0 * val_b_0;
+		res_1 +=  val_a_1 * val_b_1;
+		res_2 +=  val_a_2 * val_b_2;
+		res_3 +=  val_a_3 * val_b_3;
+	}	
+	out_c[id_y*w+id_x_new+0] = res_0;							
+	out_c[id_y*w+id_x_new+1] = res_1;
+	out_c[id_y*w+id_x_new+2] = res_2;
+	out_c[id_y*w+id_x_new+3] = res_3;
+}
+
+__kernel void mm_inter_4_step_2(const __global float * in_a, const __global float * in_b, \
+			__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);	
+	int id_y = get_global_id(1);
+	 
+	
+	int k=0;	
+	float4 res = (float4)(0.0, 0.0, 0.0, 0.0);	
+	int id_x_new = id_x * VF4;
+	
+	for(k=0; k<w; k=k+1){
+		float4 val_a = (float4)(in_a[id_y*w+k]);
+    		float4 val_b = (float4)(in_b[k*w+id_x_new+0], in_b[k*w+id_x_new+1], \
+			in_b[k*w+id_x_new+2], in_b[k*w+id_x_new+3]);
+		res += val_a*val_b;
+	}
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+}
+
+__kernel void mm_inter_4_step_3(const __global float * in_a, const __global float * in_b, \
+			__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);	
+	int id_y = get_global_id(1);
+	 
+	
+	int k=0;	
+	float4 res = (float4)(0.0);	
+	int id_x_new = id_x * VF4;
+	
+	for(k=0; k<w; k=k+1){
+		float4 val_a = (float4)(in_a[id_y*w+k]);
+		float4 val_b = vload4(0, &(in_b[k*w+id_x_new]));
+		res += val_a*val_b;
+	}
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+}
+
+__kernel void mm_inter_8_step_1(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF8;
+	int k=0;
+	float res_0 = 0;
+	float res_1 = 0;
+	float res_2 = 0;
+	float res_3 = 0;	
+	float res_4 = 0;
+	float res_5 = 0;
+	float res_6 = 0;
+	float res_7 = 0;	
+	for(k=0; k<w; k=k+1){    	
+	    	float val_a_0 = in_a[id_y*w+k];
+	    	float val_a_1 = in_a[id_y*w+k];
+	    	float val_a_2 = in_a[id_y*w+k];
+	    	float val_a_3 = in_a[id_y*w+k];    	    	
+	    	float val_a_4 = in_a[id_y*w+k];
+	    	float val_a_5 = in_a[id_y*w+k];
+	    	float val_a_6 = in_a[id_y*w+k];
+	    	float val_a_7 = in_a[id_y*w+k];    	    	
+
+	    	float val_b_0 = in_b[k*w+id_x_new+0];
+	    	float val_b_1 = in_b[k*w+id_x_new+1];
+	    	float val_b_2 = in_b[k*w+id_x_new+2];
+	    	float val_b_3 = in_b[k*w+id_x_new+3];    	
+	    	float val_b_4 = in_b[k*w+id_x_new+4];
+	    	float val_b_5 = in_b[k*w+id_x_new+5];
+	    	float val_b_6 = in_b[k*w+id_x_new+6];
+	    	float val_b_7 = in_b[k*w+id_x_new+7];    	
+
+		res_0 +=  val_a_0 * val_b_0;
+		res_1 +=  val_a_1 * val_b_1;
+		res_2 +=  val_a_2 * val_b_2;
+		res_3 +=  val_a_3 * val_b_3;
+		res_4 +=  val_a_4 * val_b_4;
+		res_5 +=  val_a_5 * val_b_5;
+		res_6 +=  val_a_6 * val_b_5;
+		res_7 +=  val_a_7 * val_b_7;
+
+	}	
+	out_c[id_y*w+id_x_new+0] = res_0;							
+	out_c[id_y*w+id_x_new+1] = res_1;
+	out_c[id_y*w+id_x_new+2] = res_2;
+	out_c[id_y*w+id_x_new+3] = res_3;
+	out_c[id_y*w+id_x_new+4] = res_4;							
+	out_c[id_y*w+id_x_new+5] = res_5;
+	out_c[id_y*w+id_x_new+6] = res_6;
+	out_c[id_y*w+id_x_new+7] = res_7;
+}
+
+__kernel void mm_inter_8_step_2(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF8;
+	int k=0;
+	float8 res = (float8)(0.0);
+	for(k=0; k<w; k=k+1){    	
+
+		float8 val_a = (float8)(in_a[id_y*w+k]);
+		float8 val_b = (float8)(in_b[k*w+id_x_new+0], in_b[k*w+id_x_new+1], \
+				in_b[k*w+id_x_new+2], in_b[k*w+id_x_new+3], in_b[k*w+id_x_new+4], \
+				in_b[k*w+id_x_new+5], in_b[k*w+id_x_new+6], in_b[k*w+id_x_new+7]);
+		res += val_a * val_b;
+
+	}	
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+	out_c[id_y*w+id_x_new+4] = res.s4;							
+	out_c[id_y*w+id_x_new+5] = res.s5;
+	out_c[id_y*w+id_x_new+6] = res.s6;
+	out_c[id_y*w+id_x_new+7] = res.s7;
+}
+
+__kernel void mm_inter_8_step_3(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF8;
+	int k=0;
+	float8 res = (float8)(0.0);
+	for(k=0; k<w; k=k+1){    	
+
+		float8 val_a = (float8)(in_a[id_y*w+k]);
+		float8 val_b = vload8(0, &(in_b[k*w+id_x_new+0]));
+		res += val_a * val_b;
+
+	}	
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+	out_c[id_y*w+id_x_new+4] = res.s4;							
+	out_c[id_y*w+id_x_new+5] = res.s5;
+	out_c[id_y*w+id_x_new+6] = res.s6;
+	out_c[id_y*w+id_x_new+7] = res.s7;
+}
+
+
+__kernel void mm_inter_16_step_1(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF16;
+	int k=0;
+	float res_0 = 0;
+	float res_1 = 0;
+	float res_2 = 0;
+	float res_3 = 0;	
+	float res_4 = 0;
+	float res_5 = 0;
+	float res_6 = 0;
+	float res_7 = 0;	
+	float res_8 = 0;
+	float res_9 = 0;
+	float res_a = 0;
+	float res_b = 0;	
+	float res_c = 0;
+	float res_d = 0;
+	float res_e = 0;
+	float res_f = 0;	
+
+	for(k=0; k<w; k=k+1){    	
+	    	float val_a_0 = in_a[id_y*w+k];
+	    	float val_a_1 = in_a[id_y*w+k];
+	    	float val_a_2 = in_a[id_y*w+k];
+	    	float val_a_3 = in_a[id_y*w+k];    	    	
+	    	float val_a_4 = in_a[id_y*w+k];
+	    	float val_a_5 = in_a[id_y*w+k];
+	    	float val_a_6 = in_a[id_y*w+k];
+	    	float val_a_7 = in_a[id_y*w+k];    	    	
+	    	float val_a_8 = in_a[id_y*w+k];
+	    	float val_a_9 = in_a[id_y*w+k];
+	    	float val_a_a = in_a[id_y*w+k];
+	    	float val_a_b = in_a[id_y*w+k];    	    	
+	    	float val_a_c = in_a[id_y*w+k];
+	    	float val_a_d = in_a[id_y*w+k];
+	    	float val_a_e = in_a[id_y*w+k];
+	    	float val_a_f = in_a[id_y*w+k];    	    	
+
+	    	float val_b_0 = in_b[k*w+id_x_new+0];
+	    	float val_b_1 = in_b[k*w+id_x_new+1];
+	    	float val_b_2 = in_b[k*w+id_x_new+2];
+	    	float val_b_3 = in_b[k*w+id_x_new+3];    	
+	    	float val_b_4 = in_b[k*w+id_x_new+4];
+	    	float val_b_5 = in_b[k*w+id_x_new+5];
+	    	float val_b_6 = in_b[k*w+id_x_new+6];
+	    	float val_b_7 = in_b[k*w+id_x_new+7];    	
+	    	float val_b_8 = in_b[k*w+id_x_new+8];
+	    	float val_b_9 = in_b[k*w+id_x_new+9];
+	    	float val_b_a = in_b[k*w+id_x_new+10];
+	    	float val_b_b = in_b[k*w+id_x_new+11];    	
+	    	float val_b_c = in_b[k*w+id_x_new+12];
+	    	float val_b_d = in_b[k*w+id_x_new+13];
+	    	float val_b_e = in_b[k*w+id_x_new+14];
+	    	float val_b_f = in_b[k*w+id_x_new+15];    	
+
+		res_0 +=  val_a_0 * val_b_0;
+		res_1 +=  val_a_1 * val_b_1;
+		res_2 +=  val_a_2 * val_b_2;
+		res_3 +=  val_a_3 * val_b_3;
+		res_4 +=  val_a_4 * val_b_4;
+		res_5 +=  val_a_5 * val_b_5;
+		res_6 +=  val_a_6 * val_b_5;
+		res_7 +=  val_a_7 * val_b_7;
+		res_8 +=  val_a_8 * val_b_8;
+		res_9 +=  val_a_9 * val_b_9;
+		res_a +=  val_a_a * val_b_a;
+		res_b +=  val_a_b * val_b_b;
+		res_c +=  val_a_c * val_b_c;
+		res_d +=  val_a_d * val_b_d;
+		res_e +=  val_a_e * val_b_e;
+		res_f +=  val_a_f * val_b_f;
+
+	}	
+	out_c[id_y*w+id_x_new+0] = res_0;							
+	out_c[id_y*w+id_x_new+1] = res_1;
+	out_c[id_y*w+id_x_new+2] = res_2;
+	out_c[id_y*w+id_x_new+3] = res_3;
+	out_c[id_y*w+id_x_new+4] = res_4;							
+	out_c[id_y*w+id_x_new+5] = res_5;
+	out_c[id_y*w+id_x_new+6] = res_6;
+	out_c[id_y*w+id_x_new+7] = res_7;
+	out_c[id_y*w+id_x_new+8] = res_8;							
+	out_c[id_y*w+id_x_new+9] = res_9;
+	out_c[id_y*w+id_x_new+10] = res_a;
+	out_c[id_y*w+id_x_new+11] = res_b;
+	out_c[id_y*w+id_x_new+12] = res_c;							
+	out_c[id_y*w+id_x_new+13] = res_d;
+	out_c[id_y*w+id_x_new+14] = res_e;
+	out_c[id_y*w+id_x_new+15] = res_f;
+}
+
+__kernel void mm_inter_16_step_2(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF16;
+	int k=0;
+	float16 res = (float16)(0.0);
+
+	for(k=0; k<w; k=k+1){    	
+
+		float16 val_a = (float16)(in_a[id_y*w+k]);
+		float16 val_b = (float16)(in_b[k*w+id_x_new+0], in_b[k*w+id_x_new+1], in_b[k*w+id_x_new+2], \
+			in_b[k*w+id_x_new+3], in_b[k*w+id_x_new+4], in_b[k*w+id_x_new+5], \
+			in_b[k*w+id_x_new+6], in_b[k*w+id_x_new+7], in_b[k*w+id_x_new+8], \
+			in_b[k*w+id_x_new+9], in_b[k*w+id_x_new+10], in_b[k*w+id_x_new+11], \
+			in_b[k*w+id_x_new+12], in_b[k*w+id_x_new+13], in_b[k*w+id_x_new+14], \
+			in_b[k*w+id_x_new+15]);
+		res += val_a * val_b;
+
+	}	
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+	out_c[id_y*w+id_x_new+4] = res.s4;							
+	out_c[id_y*w+id_x_new+5] = res.s5;
+	out_c[id_y*w+id_x_new+6] = res.s6;
+	out_c[id_y*w+id_x_new+7] = res.s7;
+	out_c[id_y*w+id_x_new+8] = res.s8;							
+	out_c[id_y*w+id_x_new+9] = res.s9;
+	out_c[id_y*w+id_x_new+10] = res.sa;
+	out_c[id_y*w+id_x_new+11] = res.sb;
+	out_c[id_y*w+id_x_new+12] = res.sc;							
+	out_c[id_y*w+id_x_new+13] = res.sd;
+	out_c[id_y*w+id_x_new+14] = res.se;
+	out_c[id_y*w+id_x_new+15] = res.sf;
+}
+
+__kernel void mm_inter_16_step_3(const __global float * in_a, const __global float * in_b, \
+				__global float * out_c, const int w, const int h){
+
+	int id_x = get_global_id(0);
+	int id_y = get_global_id(1);
+	
+	
+	int id_x_new = id_x * VF16;
+	int k=0;
+	float16 res = (float16)(0.0);
+
+	for(k=0; k<w; k=k+1){    	
+
+		float16 val_a = (float16)(in_a[id_y*w+k]);
+		float16 val_b = vload16(0, &(in_b[k*w+id_x_new+0]));
+		res += val_a * val_b;
+	}	
+
+	out_c[id_y*w+id_x_new+0] = res.s0;							
+	out_c[id_y*w+id_x_new+1] = res.s1;
+	out_c[id_y*w+id_x_new+2] = res.s2;
+	out_c[id_y*w+id_x_new+3] = res.s3;
+	out_c[id_y*w+id_x_new+4] = res.s4;							
+	out_c[id_y*w+id_x_new+5] = res.s5;
+	out_c[id_y*w+id_x_new+6] = res.s6;
+	out_c[id_y*w+id_x_new+7] = res.s7;
+	out_c[id_y*w+id_x_new+8] = res.s8;							
+	out_c[id_y*w+id_x_new+9] = res.s9;
+	out_c[id_y*w+id_x_new+10] = res.sa;
+	out_c[id_y*w+id_x_new+11] = res.sb;
+	out_c[id_y*w+id_x_new+12] = res.sc;							
+	out_c[id_y*w+id_x_new+13] = res.sd;
+	out_c[id_y*w+id_x_new+14] = res.se;
+	out_c[id_y*w+id_x_new+15] = res.sf;
+}
+

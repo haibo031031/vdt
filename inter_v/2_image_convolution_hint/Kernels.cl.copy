@@ -1,0 +1,333 @@
+#define VF2 2
+#define VF4 4
+#define VF8 8
+#define VF16 16
+
+__kernel void convolve_native(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0);
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out;
+    const int y_in_topleft = y_out;
+
+    float sum = 0.0f;
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot  = idx_filter  + c;
+            int idx_in_tot = idx_in + c;
+            float in = input[idx_in_tot];
+            float f = filter[idx_filter_tot];
+            sum += in * f;
+        }
+    }
+    const int idx_out = y_out * n_width + x_out;
+    output[idx_out] = sum;
+}
+
+__kernel void convolve_inter_2_step_1(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF2;
+    const int y_in_topleft = y_out;
+
+    float sum_0 = 0.0f;
+    float sum_1 = 0.0f;
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot_0 = idx_filter + c;
+	    int idx_filter_tot_1 = idx_filter + c;
+            int idx_in_tot_0 = idx_in + c + 0;
+            int idx_in_tot_1 = idx_in + c + 1;
+            float in_0 = input[idx_in_tot_0];
+            float in_1 = input[idx_in_tot_1];
+            float f_0 = filter[idx_filter_tot_0];
+            float f_1 = filter[idx_filter_tot_1];
+            sum_0 += in_0 * f_0;
+            sum_1 += in_1 * f_1;
+        }
+    }
+    int idx_out_0 = (y_out * n_width + x_out) * VF2 + 0;
+    int idx_out_1 = (y_out * n_width + x_out) * VF2 + 1;
+    output[idx_out_0] = sum_0;
+    output[idx_out_1] = sum_1;
+}
+
+__kernel void convolve_inter_2_step_2(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF2;
+    const int y_in_topleft = y_out;
+
+    float2 sum = (float2)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float2 in = (float2)(input[idx_in_tot], input[idx_in_tot+1]);
+	    float2 f = (float2)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF2;
+    output[idx_out] = sum.s0;
+    output[idx_out + 1] = sum.s1;
+}
+
+__kernel void convolve_inter_2_step_3(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF2;
+    const int y_in_topleft = y_out;
+
+    float2 sum = (float2)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float2 in = vload2(0, &(input[idx_in_tot]));
+	    float2 f = (float2)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF2;
+    vstore2(sum, 0, &(output[idx_out]));
+}
+
+__kernel void convolve_inter_4_step_2(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF4;
+    const int y_in_topleft = y_out;
+
+    float4 sum = (float4)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float4 in = (float4)(input[idx_in_tot], input[idx_in_tot+1], input[idx_in_tot+2], input[idx_in_tot+3]);
+	    float4 f = (float4)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF4;
+    output[idx_out + 0] = sum.s0;
+    output[idx_out + 1] = sum.s1;
+    output[idx_out + 2] = sum.s2;
+    output[idx_out + 3] = sum.s3;
+}
+
+__kernel void convolve_inter_4_step_3(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF4;
+    const int y_in_topleft = y_out;
+
+    float4 sum = (float4)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float4 in = vload4(0, &(input[idx_in_tot]));
+	    float4 f = (float4)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF4;
+    vstore4(sum, 0, &(output[idx_out + 0]));
+}
+
+__kernel void convolve_inter_8_step_2(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF8;
+    const int y_in_topleft = y_out;
+
+    float8 sum = (float8)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float8 in = (float8)(input[idx_in_tot], input[idx_in_tot+1], input[idx_in_tot+2], input[idx_in_tot+3], \
+	input[idx_in_tot+4], input[idx_in_tot+5], input[idx_in_tot+6], input[idx_in_tot+7]);
+	    float8 f = (float8)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF8;
+    output[idx_out + 0] = sum.s0;
+    output[idx_out + 1] = sum.s1;
+    output[idx_out + 2] = sum.s2;
+    output[idx_out + 3] = sum.s3;
+    output[idx_out + 4] = sum.s4;
+    output[idx_out + 5] = sum.s5;
+    output[idx_out + 6] = sum.s6;
+    output[idx_out + 7] = sum.s7;
+}
+
+__kernel void convolve_inter_8_step_3(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF8;
+    const int y_in_topleft = y_out;
+
+    float8 sum = (float8)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float8 in = vload8(0, &(input[idx_in_tot]));
+	    float8 f = (float8)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF8;
+    vstore8(sum, 0, &(output[idx_out + 0]));
+}
+
+__kernel void convolve_inter_16_step_2(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF16;
+    const int y_in_topleft = y_out;
+
+    float16 sum = (float16)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float16 in = (float16)(input[idx_in_tot], input[idx_in_tot+1], input[idx_in_tot+2], input[idx_in_tot+3], \
+	input[idx_in_tot+4], input[idx_in_tot+5], input[idx_in_tot+6], input[idx_in_tot+7], \
+	input[idx_in_tot+8], input[idx_in_tot+9], input[idx_in_tot+10], input[idx_in_tot+11], \
+	input[idx_in_tot+12], input[idx_in_tot+13], input[idx_in_tot+14], input[idx_in_tot+15]);
+	    float16 f = (float16)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF16;
+    output[idx_out + 0] = sum.s0;
+    output[idx_out + 1] = sum.s1;
+    output[idx_out + 2] = sum.s2;
+    output[idx_out + 3] = sum.s3;
+    output[idx_out + 4] = sum.s4;
+    output[idx_out + 5] = sum.s5;
+    output[idx_out + 6] = sum.s6;
+    output[idx_out + 7] = sum.s7;
+    output[idx_out + 8] = sum.s8;
+    output[idx_out + 9] = sum.s9;
+    output[idx_out + 10] = sum.sa;
+    output[idx_out + 11] = sum.sb;
+    output[idx_out + 12] = sum.sc;
+    output[idx_out + 13] = sum.sd;
+    output[idx_out + 14] = sum.se;
+    output[idx_out + 15] = sum.sf;
+}
+
+__kernel void convolve_inter_16_step_3(const __global  float * input, __constant float * filter, \
+                  __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0) ;
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out * VF16;
+    const int y_in_topleft = y_out;
+
+    float16 sum = (float16)(0.0f);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot = idx_filter + c;
+            int idx_in_tot = idx_in + c;
+	    float16 in = vload16(0, &(input[idx_in_tot]));
+	    float16 f = (float16)(filter[idx_filter_tot]);
+	    sum += in * f;
+        }
+    }
+    int idx_out = (y_out * n_width + x_out) * VF16;
+    vstore16(sum, 0, &(output[idx_out + 0]));
+}
+
+__kernel void convolve_inter_4_step_share(const __global  float * input, __constant float * filter, \
+                        __global  float * output, const int n_in_width, const int n_filter_width){
+    const int n_width = get_global_size(0);
+    const int x_out = get_global_id(0);
+    const int y_out = get_global_id(1);
+    const int x_in_topleft = x_out*VF4;
+    const int y_in_topleft = y_out;
+	__global float4 * view_output = (__global float4 *)output;
+
+    float4 sum = (float4)(0.0, 0.0, 0.0, 0.0);
+    for (int r = 0; r < n_filter_width; r++){
+        int idx_filter = r * n_filter_width;
+        int y_in = y_in_topleft + r;
+        int idx_in = y_in * n_in_width + x_in_topleft;
+		float4 cache = (float4)(input[idx_in + 0], input[idx_in + 1], input[idx_in + 2], 0.0);
+        for (int c = 0; c < n_filter_width; c++){
+            int idx_filter_tot  = idx_filter  + c;
+            int idx_in_tot = idx_in + c;
+            cache.w = input[idx_in_tot + 3];
+			float4 f  = (float4)(filter[idx_filter_tot], filter[idx_filter_tot], filter[idx_filter_tot], filter[idx_filter_tot]);			
+			sum += cache * f;
+			cache.x = cache.y;
+			cache.y = cache.z;
+			cache.z = cache.w;
+        }
+    }
+    const int idx_out = y_out*n_width + x_out;
+    view_output[idx_out] = sum; 
+}
+

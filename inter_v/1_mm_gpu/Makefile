@@ -1,0 +1,29 @@
+#C compiler
+CC = g++
+#0
+#CUDA_DIR = /usr/local/cuda/
+#INC = $(CUDA_DIR)/include/
+#LIB = $(CUDA_DIR)/lib64/
+#1
+#APP_DIR = /cm/shared/package/amd-app-sdk/2.5/
+#INC = $(APP_DIR)/include/
+#LIB = $(APP_DIR)/lib/x86_64
+#2
+#INTEL_DIR = /cm/shared/package/intel-ocl-sdk/1.1
+#INC = $(INTEL_DIR)/include/
+#LIB = $(INTEL_DIR)/lib64
+
+#3
+#APP_DIR = /home/jianbin/AMD-APP-SDK-v2.4-lnx64
+#INC = $(APP_DIR)/include/
+#LIB = $(APP_DIR)/lib/x86_64
+
+
+SRC = app.cpp
+EXE = app.${foo}
+
+release: $(SRC)
+	$(CC)  -fopenmp $(SRC) -o $(EXE) -lOpenCL 
+
+clean: $(SRC)
+	rm -f $(EXE) $(EXE).linkinfo *~

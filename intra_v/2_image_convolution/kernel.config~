@@ -1,0 +1,6 @@
+0 Kernels.cl convolve_native
+1 Kernels.cl convolve_intra_2_step_2
+2 Kernels.cl convolve_intra_4_step_2
+3 Kernels.cl convolve_intra_8_step_2
+4 Kernels.cl convolve_intra_16_step_2
+

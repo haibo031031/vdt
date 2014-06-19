@@ -1,0 +1,4 @@
+rm results.dat
+make errmsg
+./black_scholes -p 0 -t gpu -d 0
+

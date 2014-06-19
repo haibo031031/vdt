@@ -1,0 +1,121 @@
+; ModuleID = 'Program'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux"
+
+declare void @__read_8_original(float addrspace(1)*, float addrspace(1)*, i32, i32) nounwind
+
+declare i64 @get_global_id(i32) nounwind readnone
+
+declare <8 x float> @_Z6vload8mPKU3AS1f(i64, float addrspace(1)* nocapture) nounwind readonly
+
+declare void @_Z7vstore8Dv8_fmPU3AS1f(<8 x float>, i64, float addrspace(1)* nocapture) nounwind
+
+declare [7 x i64] @__WG.boundaries.read_8_original(float addrspace(1)*, float addrspace(1)*, i32, i32)
+
+declare i64 @get_local_size(i32)
+
+declare i64 @get_base_global_id.(i32)
+
+declare i1 @__ocl_allOne(i1)
+
+declare i1 @__ocl_allZero(i1)
+
+declare void @__read_8_separated_args(float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*) nounwind alwaysinline
+
+declare [7 x i64] @WG.boundaries.read_8(float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)
+
+define void @read_8(i8* %pBuffer) {
+entry:
+  %0 = bitcast i8* %pBuffer to float addrspace(1)**
+  %1 = load float addrspace(1)** %0, align 8
+  %2 = getelementptr i8* %pBuffer, i64 8
+  %3 = bitcast i8* %2 to float addrspace(1)**
+  %4 = load float addrspace(1)** %3, align 8
+  %5 = getelementptr i8* %pBuffer, i64 16
+  %6 = bitcast i8* %5 to i32*
+  %7 = load i32* %6, align 4
+  %8 = getelementptr i8* %pBuffer, i64 20
+  %9 = bitcast i8* %8 to i32*
+  %10 = load i32* %9, align 4
+  %11 = getelementptr i8* %pBuffer, i64 24
+  %12 = bitcast i8* %11 to { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }**
+  %13 = load { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }** %12, align 8
+  %14 = getelementptr i8* %pBuffer, i64 40
+  %15 = bitcast i8* %14 to <{ [4 x i64] }>**
+  %16 = load <{ [4 x i64] }>** %15, align 8
+  %17 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 0
+  %18 = load i64* %17, align 8
+  %19 = bitcast <{ [4 x i64] }>* %16 to i64*
+  %20 = load i64* %19, align 8
+  %21 = getelementptr { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }* %13, i64 0, i32 3, i64 1
+  %22 = load i64* %21, align 8
+  %23 = getelementptr <{ [4 x i64] }>* %16, i64 0, i32 0, i64 1
+  %24 = load i64* %23, align 8
+  %25 = mul i64 %20, 8
+  %26 = trunc i64 %25 to i32
+  br label %dim_0_pre_head.i
+
+dim_0_pre_head.i:                                 ; preds = %dim_0_exit.i, %entry
+  %dim_1_ind_var.i = phi i64 [ 0, %entry ], [ %dim_1_inc_ind_var.i, %dim_0_exit.i ]
+  %dim_1_tid.i = phi i64 [ %24, %entry ], [ %dim_1_inc_tid.i, %dim_0_exit.i ]
+  %27 = trunc i64 %dim_1_tid.i to i32
+  %28 = mul nsw i32 %27, %7
+  br label %scalar_kernel_entry.i
+
+scalar_kernel_entry.i:                            ; preds = %._crit_edge.i, %dim_0_pre_head.i
+  %lsr.iv1 = phi i32 [ %lsr.iv.next2, %._crit_edge.i ], [ %26, %dim_0_pre_head.i ]
+  %dim_0_ind_var.i = phi i64 [ 0, %dim_0_pre_head.i ], [ %dim_0_inc_ind_var.i, %._crit_edge.i ]
+  %dim_0_tid.i = phi i64 [ %20, %dim_0_pre_head.i ], [ %dim_0_inc_tid.i, %._crit_edge.i ]
+  %29 = icmp sgt i32 %10, 0
+  %30 = shl i64 %dim_0_tid.i, 3
+  %31 = trunc i64 %30 to i32
+  %32 = add nsw i32 %28, %31
+  br i1 %29, label %.lr.ph.i, label %._crit_edge.i
+
+.lr.ph.i:                                         ; preds = %scalar_kernel_entry.i, %.lr.ph.i
+  %lsr.iv3 = phi i32 [ %lsr.iv.next4, %.lr.ph.i ], [ %lsr.iv1, %scalar_kernel_entry.i ]
+  %lsr.iv = phi i32 [ %lsr.iv.next, %.lr.ph.i ], [ %10, %scalar_kernel_entry.i ]
+  %val.01.i = phi <8 x float> [ %36, %.lr.ph.i ], [ zeroinitializer, %scalar_kernel_entry.i ]
+  %33 = sext i32 %lsr.iv3 to i64
+  %34 = getelementptr inbounds float addrspace(1)* %1, i64 %33
+  %35 = bitcast float addrspace(1)* %34 to <8 x float>*
+  %srcval.i.i = load <8 x float>* %35, align 1
+  %36 = fadd <8 x float> %val.01.i, %srcval.i.i
+  %lsr.iv.next = add i32 %lsr.iv, -1
+  %lsr.iv.next4 = add i32 %lsr.iv3, %7
+  %exitcond.i = icmp eq i32 %lsr.iv.next, 0
+  br i1 %exitcond.i, label %._crit_edge.i, label %.lr.ph.i
+
+._crit_edge.i:                                    ; preds = %.lr.ph.i, %scalar_kernel_entry.i
+  %val.0.lcssa.i = phi <8 x float> [ zeroinitializer, %scalar_kernel_entry.i ], [ %36, %.lr.ph.i ]
+  %37 = sext i32 %32 to i64
+  %38 = getelementptr inbounds float addrspace(1)* %4, i64 %37
+  %39 = bitcast float addrspace(1)* %38 to <8 x float>*
+  store <8 x float> %val.0.lcssa.i, <8 x float>* %39, align 1
+  %dim_0_inc_ind_var.i = add nuw nsw i64 %dim_0_ind_var.i, 1
+  %dim_0_inc_tid.i = add nuw nsw i64 %dim_0_tid.i, 1
+  %lsr.iv.next2 = add i32 %lsr.iv1, 8
+  %dim_0_cmp.to.max.i = icmp eq i64 %dim_0_inc_ind_var.i, %18
+  br i1 %dim_0_cmp.to.max.i, label %dim_0_exit.i, label %scalar_kernel_entry.i
+
+dim_0_exit.i:                                     ; preds = %._crit_edge.i
+  %dim_1_inc_ind_var.i = add nuw nsw i64 %dim_1_ind_var.i, 1
+  %dim_1_inc_tid.i = add nuw nsw i64 %dim_1_tid.i, 1
+  %dim_1_cmp.to.max.i = icmp eq i64 %dim_1_inc_ind_var.i, %22
+  br i1 %dim_1_cmp.to.max.i, label %__read_8_separated_args.exit, label %dim_0_pre_head.i
+
+__read_8_separated_args.exit:                     ; preds = %dim_0_exit.i
+  ret void
+}
+
+!opencl.kernels = !{!0}
+!opencl.build.options = !{!2}
+!cl.noBarrierPath.kernels = !{!3}
+!opencl.wrappers = !{!4}
+!opencl.disabled.FP_CONTRACT = !{}
+
+!0 = metadata !{void (float addrspace(1)*, float addrspace(1)*, i32, i32, i8 addrspace(3)*, { i32, [3 x i64], [3 x i64], [3 x i64], [3 x i64] }*, i64*, <{ [4 x i64] }>*, i64*, <{ [4 x i64] }>*, i64, i8*, i64*)* @__read_8_separated_args, metadata !1}
+!1 = metadata !{metadata !"image_access_qualifier", i32 3, i32 3, i32 3, i32 3}
+!2 = metadata !{metadata !"-cl-std=CL1.2"}
+!3 = metadata !{metadata !"read_8"}
+!4 = metadata !{void (i8*)* @read_8}

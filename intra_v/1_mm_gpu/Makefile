@@ -1,0 +1,13 @@
+#C compiler
+CC = g++
+SRC = app.cpp
+EXE = app.${foo}
+
+release: $(SRC)
+	$(CC) $(SRC) -o $(EXE) -lOpenCL  -fopenmp 
+
+run:
+	./$(EXE)
+	
+clean: $(SRC)
+	rm -f $(EXE) $(EXE).linkinfo

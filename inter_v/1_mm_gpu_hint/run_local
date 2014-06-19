@@ -1,0 +1,4 @@
+rm results.dat
+make errmsg
+./mm -p 0 -t cpu -d 0
+

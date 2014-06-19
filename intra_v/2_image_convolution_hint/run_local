@@ -1,0 +1,4 @@
+rm results.dat
+make errmsg
+./image_convolution -p 1 -t gpu -d 0
+

@@ -1,0 +1,5 @@
+0 Kernels.cl mm_native
+1 Kernels.cl mm_inter_2_step_2
+2 Kernels.cl mm_inter_4_step_2
+3 Kernels.cl mm_inter_8_step_2
+4 Kernels.cl mm_inter_16_step_2
