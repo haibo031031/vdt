@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Vdt : Vector data types" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Vdt</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/haibo031031/vdt">View on GitHub</a>
+
+          <h1 id="project_title">Vdt</h1>
+          <h2 id="project_tagline">Vector data types</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/haibo031031/vdt/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/haibo031031/vdt/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h3>
+
+<p>If we code in the traditional CUDA-style (without any vectorization), only a small proportion of the computational potential, in theory, is tapped for these machines with SIMD units. Thus, vectorization (either manual vectorization or auto-vectorization module) is required. Manual vectorization (with vector data types) generates a large number of code variants and poses a challenge for performance portability. Auto-vectorizer is preferred in such a context when considering both performance and portability. As a start, we have provided a suite of benchmarks on investigating the use of vector data types in OpenCL.</p>
+
+<h3>
+<a name="mapping-vdts-to-hardware" class="anchor" href="#mapping-vdts-to-hardware"><span class="octicon octicon-link"></span></a>Mapping VDTs to hardware</h3>
+
+<h3>
+<a name="reference" class="anchor" href="#reference"><span class="octicon octicon-link"></span></a>Reference</h3>
+
+<p>J. Fang, A. L. Varbanescu, X. Liao, and H. Sips, "Evaluating vector data type usage in OpenCL kernels," Concurrency and Computation: Practice and Experience, vol. (In submission).</p>
+
+<h3>
+<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Having trouble with the code? Let me us via <a href="mailto:j.fang@tudelft.nl">j.fang@tudelft.nl</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Vdt maintained by <a href="https://github.com/haibo031031">haibo031031</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("Vector-data-types");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
